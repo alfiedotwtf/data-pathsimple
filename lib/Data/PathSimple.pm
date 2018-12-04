@@ -150,7 +150,7 @@ Data::PathSimple - Navigate and manipulate data structures using paths
 
 =head1 DESCRIPTION
 
-Data::PathSimple allows you to get and set values deep within a data structure
+B<Data::PathSimple> allows you to get and set values deep within a data structure
 using simple paths to navigate (think XPATH without the steroids).
 
 Why do this when we already have direct access to the data structure? The
@@ -166,13 +166,13 @@ Gets the value at the specified path:
 
   my $current_perl = get( $data, '/Languages/Perl/CurrentVersion' );
 
-If a path does not exist, undef is returned. For example, the following will
-return undef since the 'Ruby' path does not exist:
+If a path does not exist, C<undef> is returned. For example, the following will
+return C<undef> since the C<Ruby> path does not exist:
 
   my $current_ruby = get( $data, '/Languages/Ruby/CurrentVersion' );
 
-If the path is not an integer yet we are accessing an array ref, undef is
-returned. For example, the following will return undef since the 'first' path
+If the path is not an integer yet we are accessing an array ref, C<undef> is
+returned. For example, the following will return undef since the C<first> path
 is not an integer:
 
   my $perl_url = get( $data, '/Languages/Perl/URLs/first' );
@@ -187,18 +187,18 @@ Sets the value at the specified path:
   set( $data, '/Languages/Perl/CurrentVersion', '5.16.2' );
 
 If a path does not exist, it will be autovivified. For example, the following
-will create the 'Ruby' path:
+will create the C<Ruby> path:
 
   set( $data, '/Languages/Ruby/CurrentVersion', '1.9.3' );
 
 By default hash refs are used when autovivifying. However if the path is an
 integer, then an array ref will be used instead. For example, the following
-will create an array ref for the 'URLs' path:
+will create an array ref for the C<URLs> path:
 
   set( $data, '/Languages/Ruby/URLs/0', 'http://www.ruby-lang.org' );
 
-If the path is not an integer yet we are accessing an array ref, undef is
-returned. For example, the following will return undef since the 'first' path
+If the path is not an integer yet we are accessing an array ref, C<undef> is
+returned. For example, the following will return C<undef> since the C<first> path
 is not an integer:
 
   my $perl_url = set( $data, '/Languages/Perl/URLs/first', '5.16.2' );
