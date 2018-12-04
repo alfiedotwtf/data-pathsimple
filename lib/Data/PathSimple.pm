@@ -13,12 +13,16 @@ our @EXPORT_OK = qw{
 };
 
 sub get {
-  my ( $root_ref, $root_path ) = @_;
+  my ( $root_ref, $root_path, $opts ) = @_;
 
   return undef unless defined $root_path;
-  $root_path =~ s/^\///;
 
-  my @root_parts  = split '/', $root_path;
+  $opts = { path_sep => '/', defined $opts ? %$opts : () };
+  my $path_sep = $opts->{path_sep};
+
+  $root_path =~ s/^$path_sep//;
+
+  my @root_parts  = split $path_sep, $root_path;
   my $current_ref = $root_ref;
 
   return undef unless @root_parts;
@@ -46,12 +50,16 @@ sub get {
 }
 
 sub set {
-  my ( $root_ref, $root_path, $value ) = @_;
+  my ( $root_ref, $root_path, $value, $opts ) = @_;
 
   return undef unless defined $root_path;
-  $root_path  =~ s/^\///;
 
-  my @root_parts  = split '/', $root_path;
+  $opts = { path_sep => '/', defined $opts ? %$opts : () };
+  my $path_sep = $opts->{path_sep};
+
+  $root_path  =~ s/^$path_sep//;
+
+  my @root_parts  = split $path_sep, $root_path;
   my $current_ref = $root_ref;
 
   return undef unless @root_parts;
@@ -156,6 +164,17 @@ using simple paths to navigate (think XPATH without the steroids).
 Why do this when we already have direct access to the data structure? The
 motivation is that the path will come from a user using a command line tool.
 
+=head2 Path Specifications
+
+A path is specified as a string consisting of components separated by
+a I<path separator>.  By default the separator is the C</> character,
+but that may be changed via the C<path_sep> option.  Paths are always
+specified relative to the root of the structure; a leading path
+separator is optional.
+
+A path component is treated as an array index if it matches an integer
+number, as a hash key otherwise.
+
 =head1 FUNCTIONS
 
 Functions are not exported by default.
@@ -164,7 +183,18 @@ Functions are not exported by default.
 
 Gets the value at the specified path:
 
-  my $current_perl = get( $data, '/Languages/Perl/CurrentVersion' );
+  my $current_perl = get( $data, '/Languages/Perl/CurrentVersion', ?\%options );
+
+The following options are supported:
+
+=over
+
+=item path_sep
+
+A string or reqular expression which will match the path separator.
+It defaults to the string C</>.
+
+=back
 
 If a path does not exist, C<undef> is returned. For example, the following will
 return C<undef> since the C<Ruby> path does not exist:
@@ -184,7 +214,18 @@ never be modified by a call to C<get()>.
 
 Sets the value at the specified path:
 
-  set( $data, '/Languages/Perl/CurrentVersion', '5.16.2' );
+  set( $data, '/Languages/Perl/CurrentVersion', '5.16.2', ?\%options );
+
+The following options are supported:
+
+=over
+
+=item path_sep
+
+A string or reqular expression which will match the path separator.
+It defaults to the string C</>.
+
+=back
 
 If a path does not exist, it will be autovivified. For example, the following
 will create the C<Ruby> path:
