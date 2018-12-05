@@ -12,20 +12,29 @@ our @EXPORT_OK = qw{
   set
 };
 
+sub _error {
+    'CODE' eq ref $_[0] ? $_[0]->() : $_[0];
+}
+
 sub get {
-  my ( $root_ref, $root_path, $opts ) = @_;
 
-  return undef unless defined $root_path;
+  my %opts = ( path_sep => '/',
+	       error => undef,
+	       'HASH' eq ref $_[-1] ? %{ pop() }  : (),
+	     );
 
-  $opts = { path_sep => '/', defined $opts ? %$opts : () };
-  my $path_sep = $opts->{path_sep};
+  my ( $root_ref, $root_path ) = @_;
+
+  return _error( $opts{error} ) unless defined $root_path;
+
+  my $path_sep = $opts{path_sep};
 
   $root_path =~ s/^$path_sep//;
 
   my @root_parts  = split $path_sep, $root_path;
   my $current_ref = $root_ref;
 
-  return undef unless @root_parts;
+  return _error( $opts{error} ) unless @root_parts;
 
   foreach my $current_part ( @root_parts ) {
     if ( ref $current_ref eq 'HASH' ) {
@@ -35,7 +44,7 @@ sub get {
       }
     }
     elsif ( ref $current_ref eq 'ARRAY' ) {
-      return undef if $current_part !~ /^\d+$/;
+      return _error( $opts{error} ) if $current_part !~ /^\d+$/;
 
       if ( exists $current_ref->[$current_part] ) {
         $current_ref = $current_ref->[$current_part];
@@ -43,26 +52,31 @@ sub get {
       }
     }
 
-    return undef;
+    return _error( $opts{error} );
   }
 
   return $current_ref;
 }
 
 sub set {
-  my ( $root_ref, $root_path, $value, $opts ) = @_;
 
-  return undef unless defined $root_path;
+  my %opts = ( path_sep => '/',
+	       error => undef,
+	       'HASH' eq ref $_[-1] ? %{ pop() }  : (),
+	     );
 
-  $opts = { path_sep => '/', defined $opts ? %$opts : () };
-  my $path_sep = $opts->{path_sep};
+  my ( $root_ref, $root_path, $value ) = @_;
+
+  return _error( $opts{error} ) unless defined $root_path;
+
+  my $path_sep = $opts{path_sep};
 
   $root_path  =~ s/^$path_sep//;
 
   my @root_parts  = split $path_sep, $root_path;
   my $current_ref = $root_ref;
 
-  return undef unless @root_parts;
+  return _error( $opts{error} ) unless @root_parts;
 
   for ( my $i = 0; $i < ( @root_parts - 1 ); $i++ ) {
     my $current_part = $root_parts[ $i ];
@@ -80,7 +94,7 @@ sub set {
       next;
     }
     elsif ( ref $current_ref eq 'ARRAY' ) {
-      return undef if $current_part !~ /^\d+$/;
+      return _error( $opts{error} ) if $current_part !~ /^\d+$/;
 
       if ( not ref $current_ref->[$current_part] ) {
         $current_ref->[$current_part]
@@ -93,7 +107,8 @@ sub set {
       next;
     }
 
-    return undef;
+    # ! ref $root_ref && @root_parts > 1
+    return _error( $opts{error} );
   }
 
   my $last_part = pop @root_parts;
@@ -103,11 +118,12 @@ sub set {
   }
 
   if ( ref $current_ref eq 'ARRAY' ) {
-    return undef if $last_part !~ /^\d+$/;
+    return _error( $opts{error} ) if $last_part !~ /^\d+$/;
     return $current_ref->[$last_part] = $value;
   }
 
-  return undef;
+  # ! ref $root_ref && @root_parts == 1
+  return _error( $opts{error} );
 }
 
 1;
@@ -175,6 +191,17 @@ separator is optional.
 A path component is treated as an array index if it matches an integer
 number, as a hash key otherwise.
 
+=head2 Error returns
+
+If an error occurs (e.g, an incorrect input, or if a path cannot be resolved)
+an error value is returned.  By default this is C<undef>, but it may
+be changed with the C<error> option. That option can also take a code reference,
+so, for example,
+
+  error => sub { require Croak; Croak::carp( "error" ) }
+
+would cause an exception to be thrown on errors.
+
 =head1 FUNCTIONS
 
 Functions are not exported by default.
@@ -194,15 +221,22 @@ The following options are supported:
 A string or reqular expression which will match the path separator.
 It defaults to the string C</>.
 
+=item error
+
+How non-existent paths or mismatched array indices or hash keys
+should be handled. If set to a coderef, the result of the coderef will
+be returned.  Otherwise, whatever C<error> is set to will be returned.
+It defaults to C<undef>.
+
 =back
 
-If a path does not exist, C<undef> is returned. For example, the following will
-return C<undef> since the C<Ruby> path does not exist:
+If a path does not exist, an error value is returned. For example, the following will
+return an error since the C<Ruby> path does not exist:
 
   my $current_ruby = get( $data, '/Languages/Ruby/CurrentVersion' );
 
-If the path is not an integer yet we are accessing an array ref, C<undef> is
-returned. For example, the following will return undef since the C<first> path
+If the path is not an integer yet we are accessing an array ref, an error value is
+returned. For example, the following will return an error since the C<first> path
 is not an integer:
 
   my $perl_url = get( $data, '/Languages/Perl/URLs/first' );
@@ -225,6 +259,12 @@ The following options are supported:
 A string or reqular expression which will match the path separator.
 It defaults to the string C</>.
 
+=item error
+
+How errors should be handled. If set to a coderef, the result of the
+coderef will be returned.  Otherwise, whatever C<error> is set to will
+be returned.  It defaults to C<undef>.
+
 =back
 
 If a path does not exist, it will be autovivified. For example, the following
@@ -238,7 +278,7 @@ will create an array ref for the C<URLs> path:
 
   set( $data, '/Languages/Ruby/URLs/0', 'http://www.ruby-lang.org' );
 
-If the path is not an integer yet we are accessing an array ref, C<undef> is
+If the path is not an integer yet we are accessing an array ref, an error value is
 returned. For example, the following will return C<undef> since the C<first> path
 is not an integer:
 
