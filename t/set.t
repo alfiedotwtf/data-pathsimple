@@ -278,6 +278,23 @@ sub hash_tests {
         set_value    => $value,
         return_value => undef,
       },
+      {
+        name         => "hash data, integer, non-rooted, $type value",
+        data_before  => hash_data(),
+        data_after   => hash_data(),
+        path         => '0/1/2',
+        set_value    => $value,
+        return_value => undef,
+      },
+      {
+        name         => "hash data, integer, rooted, $type value",
+        data_before  => hash_data(),
+        data_after   => hash_data(),
+        path         => '/0/1/2',
+        set_value    => $value,
+        return_value => undef,
+      },
+
     );
 
     my $data_after = hash_data();
