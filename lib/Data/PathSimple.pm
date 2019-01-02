@@ -18,12 +18,12 @@ sub _error {
 
 sub get {
 
+  my ( $root_ref, $root_path, $options ) = @_;
+
   my %opts = ( path_sep => '/',
 	       error => undef,
-	       'HASH' eq ref $_[-1] ? %{ pop() }  : (),
+	       %{ $options || {} },
 	     );
-
-  my ( $root_ref, $root_path ) = @_;
 
   return _error( $opts{error} ) unless defined $root_path;
 
@@ -60,12 +60,12 @@ sub get {
 
 sub set {
 
+  my ( $root_ref, $root_path, $value, $options ) = @_;
+
   my %opts = ( path_sep => '/',
 	       error => undef,
-	       'HASH' eq ref $_[-1] ? %{ pop() }  : (),
+	       %{ $options || {} },
 	     );
-
-  my ( $root_ref, $root_path, $value ) = @_;
 
   return _error( $opts{error} ) unless defined $root_path;
 
