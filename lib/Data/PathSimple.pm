@@ -6,6 +6,8 @@ use warnings;
 use version 0.77;
 our $VERSION = qv("v1.0.3");
 
+use Scalar::Util qw[ reftype ];
+
 use base 'Exporter';
 our @EXPORT_OK = qw{
   get
@@ -22,12 +24,14 @@ sub get {
 
   my %opts = ( path_sep => '/',
 	       error => undef,
-	       %{ $options || {} },
+	       %{ $options // {} },
 	     );
 
   return _error( $opts{error} ) unless defined $root_path;
 
   my $path_sep = $opts{path_sep};
+  $path_sep = qr/\Q$path_sep\E/
+    unless ( reftype( $path_sep ) // '' ) eq 'REGEXP';
 
   $root_path =~ s/^$path_sep//;
 
@@ -64,12 +68,14 @@ sub set {
 
   my %opts = ( path_sep => '/',
 	       error => undef,
-	       %{ $options || {} },
+	       %{ $options // {} },
 	     );
 
   return _error( $opts{error} ) unless defined $root_path;
 
   my $path_sep = $opts{path_sep};
+  $path_sep = qr/\Q$path_sep\E/
+    unless ( reftype( $path_sep ) // '' ) eq 'REGEXP';
 
   $root_path  =~ s/^$path_sep//;
 
