@@ -62,6 +62,11 @@ sub set {
 
     if ( ref $current_ref eq 'HASH' ) {
       if ( not ref $current_ref->{$current_part} ) {
+
+        # don't use an integer as a hash key if need to
+        # create the next level in the tree
+        return undef if $current_part =~ /^\d+$/;
+
         $current_ref->{$current_part}
           = $next_part =~ /^\d+$/
             ? []
