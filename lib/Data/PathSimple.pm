@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use version 0.77;
-our $VERSION = qv("v1.0.3");
+our $VERSION = qv("v2.0.1");
 
 use Scalar::Util qw[ reftype ];
 
@@ -332,7 +332,9 @@ To install this module type the following:
 
 =head1 AUTHOR
 
-Alfie John E<lt>alfiej@opera.comE<gt>
+Alfie John E<lt>alfie@alfie.wtfE<gt>
+
+Diab Jerius E<lt>djerius@cfa.harvard.eduE<gt>
 
 =head1 WARRANTY
 
@@ -340,7 +342,7 @@ IT COMES WITHOUT WARRANTY OF ANY KIND.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2012 by Alfie John
+Copyright (C) 2021 by Alfie John
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.14.2 or,
